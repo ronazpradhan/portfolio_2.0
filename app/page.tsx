@@ -1,7 +1,7 @@
 'use client'
 
 import Preloader from './_components/Preloader'
-import Navbar from './_components/Navbar'
+import BurgerNav from './_components/BurgerNav'
 import Hero from './_components/Hero'
 import About from './_components/About'
 import Skills from './_components/Skills'
@@ -13,7 +13,7 @@ export default function Home() {
   return (
     <>
       <Preloader />
-      <Navbar />
+      <BurgerNav />
       <main>
         <Hero />
         <About />
