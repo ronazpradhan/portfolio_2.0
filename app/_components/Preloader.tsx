@@ -4,20 +4,34 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Preloader() {
-  const [show, setShow] = useState(false)
+  const [show, setShow] = useState(true)
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    const seen = sessionStorage.getItem('preloader_seen')
-    if (!seen) {
-      setShow(true)
-      const t = setTimeout(() => {
-        setShow(false)
-        sessionStorage.setItem('preloader_seen', '1')
-      }, 1400)
-      return () => clearTimeout(t)
+    // Always reset scroll to top on load
+    window.scrollTo(0, 0)
+
+    const dismiss = () => setShow(false)
+
+    const t = setTimeout(dismiss, 1400)
+
+    // Skip on click, scroll, or any key
+    window.addEventListener('click', dismiss, { once: true })
+    window.addEventListener('keydown', dismiss, { once: true })
+    window.addEventListener('wheel', dismiss, { once: true, passive: true })
+
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('click', dismiss)
+      window.removeEventListener('keydown', dismiss)
+      window.removeEventListener('wheel', dismiss)
     }
   }, [])
+
+  // Lock scroll while preloader is showing
+  useEffect(() => {
+    document.body.style.overflow = show ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [show])
 
   const letters = ['R', 'P']
 
@@ -56,16 +70,14 @@ export default function Preloader() {
           </motion.p>
 
           {/* Progress bar */}
-          <motion.div
-            className="absolute bottom-10 left-1/2 -translate-x-1/2 h-px bg-[#222222] w-24 overflow-hidden rounded-full"
-          >
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 h-px bg-[#222222] w-24 overflow-hidden rounded-full">
             <motion.div
               className="h-full bg-[hsl(215,25%,70%)] origin-left"
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
               transition={{ duration: 1.1, delay: 0.1, ease: 'easeInOut' }}
             />
-          </motion.div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
