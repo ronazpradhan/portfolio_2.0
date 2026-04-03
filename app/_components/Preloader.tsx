@@ -1,105 +1,109 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
 
-const LETTERS = ['R', 'O', 'N', 'A', 'Z']
+gsap.registerPlugin(useGSAP)
 
 export default function Preloader() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const lettersRef = useRef<(HTMLSpanElement | null)[]>([])
+  const preloaderRef = useRef<HTMLDivElement>(null)
+  const hasSkippedRef = useRef(false)
 
-  useEffect(() => {
-    window.scrollTo(0, 0)
-    document.body.style.overflow = 'hidden'
+  useGSAP(
+    () => {
+      if (!preloaderRef.current) return
 
-    const ctx = gsap.context(() => {
+      window.scrollTo(0, 0)
+      document.body.style.overflow = 'hidden'
+
+      const skipAnimation = () => {
+        if (hasSkippedRef.current) return
+        hasSkippedRef.current = true
+
+        gsap.killTweensOf('.name-text')
+        gsap.killTweensOf('.name-text span')
+        gsap.killTweensOf(preloaderRef.current)
+
+        gsap.to(preloaderRef.current, {
+          opacity: 0,
+          duration: 0.25,
+          onComplete: () => {
+            gsap.set(preloaderRef.current, { display: 'none' })
+            document.body.style.overflow = ''
+          },
+        })
+      }
+
       const tl = gsap.timeline({
+        defaults: { ease: 'power2.inOut' },
         onComplete: () => {
+          gsap.set(preloaderRef.current, { display: 'none' })
           document.body.style.overflow = ''
         },
       })
 
-      // Letters start below clip, rise into place one by one
-      tl.set(lettersRef.current, { y: 80, opacity: 0 })
-
-      tl.to(lettersRef.current, {
+      // Letters rise up from below clip (translate-y-full → 0)
+      tl.to('.name-text span', {
         y: 0,
-        opacity: 1,
-        duration: 0.6,
-        stagger: 0.08,
+        stagger: 0.06,
+        duration: 0.5,
         ease: 'power3.out',
       })
-
-      // Hold briefly
-      tl.to({}, { duration: 0.55 })
-
-      // Exit — letters drift up and fade out staggered
-      tl.to(lettersRef.current, {
-        y: -60,
+      // Hold
+      .to({}, { duration: 0.35 })
+      // Name fades + lifts
+      .to('.name-text', {
         opacity: 0,
-        duration: 0.45,
-        stagger: 0.05,
-        ease: 'power2.in',
+        y: -20,
+        duration: 0.25,
       })
+      // Preloader slides up out of view
+      .to(preloaderRef.current, {
+        y: '-100%',
+        duration: 0.65,
+        ease: 'power2.inOut',
+      }, '-=0.05')
 
-      // Fade out whole container
-      tl.to(containerRef.current, {
-        opacity: 0,
-        duration: 0.3,
-        ease: 'power1.inOut',
-        onComplete: () => {
-          if (containerRef.current) {
-            containerRef.current.style.display = 'none'
-          }
-        },
-      }, '-=0.15')
+      window.addEventListener('keydown',    skipAnimation, { once: true })
+      window.addEventListener('click',      skipAnimation, { once: true })
+      window.addEventListener('wheel',      skipAnimation, { once: true, passive: true } as EventListenerOptions)
+      window.addEventListener('touchstart', skipAnimation, { once: true, passive: true } as EventListenerOptions)
 
-    }, containerRef)
-
-    // Skip on interaction
-    const skip = () => {
-      ctx.kill()
-      gsap.to(containerRef.current, {
-        opacity: 0,
-        duration: 0.3,
-        onComplete: () => {
-          if (containerRef.current) containerRef.current.style.display = 'none'
-          document.body.style.overflow = ''
-        },
-      })
-    }
-
-    window.addEventListener('click',   skip, { once: true })
-    window.addEventListener('keydown', skip, { once: true })
-    window.addEventListener('wheel',   skip, { once: true, passive: true })
-
-    return () => {
-      ctx.kill()
-      window.removeEventListener('click',   skip)
-      window.removeEventListener('keydown', skip)
-      window.removeEventListener('wheel',   skip)
-      document.body.style.overflow = ''
-    }
-  }, [])
+      return () => {
+        tl.kill()
+        window.removeEventListener('keydown',    skipAnimation)
+        window.removeEventListener('click',      skipAnimation)
+        window.removeEventListener('wheel',      skipAnimation)
+        window.removeEventListener('touchstart', skipAnimation)
+        document.body.style.overflow = ''
+      }
+    },
+    { scope: preloaderRef },
+  )
 
   return (
     <div
-      ref={containerRef}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0a0a0a]"
+      ref={preloaderRef}
+      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#0a0a0a]"
     >
-      <div className="flex items-end gap-[0.05em]">
-        {LETTERS.map((letter, i) => (
+      <p className="name-text flex overflow-hidden leading-none font-anton"
+        style={{ fontSize: 'clamp(18vw, 20vw, 200px)' }}
+      >
+        {['R','O','N','A','Z'].map((l) => (
           <span
-            key={i}
-            ref={el => { lettersRef.current[i] = el }}
-            className="anton text-white leading-none select-none"
-            style={{ fontSize: 'clamp(4rem, 12vw, 9rem)' }}
+            key={l}
+            className="inline-block text-white"
+            style={{ transform: 'translateY(100%)' }}
           >
-            {letter}
+            {l}
           </span>
         ))}
-      </div>
+      </p>
+
+      <p className="absolute bottom-6 text-xs uppercase tracking-[0.3em] text-white/30">
+        click, scroll, or press any key to skip
+      </p>
     </div>
   )
 }
