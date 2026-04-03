@@ -4,33 +4,59 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --primary: 215 25% 70%;
-  --primary-foreground: 0 0% 10%;
-  --ring: 215 25% 70%;
-  --bg: #0a0a0a;
-  --bg-surface: #111111;
-  --bg-elevated: #181818;
-  --border: #222222;
-  --text-primary: #f0f0f0;
-  --text-secondary: #888888;
-  --text-muted: #444444;
-  --primary-color: hsl(215, 25%, 70%);
-  --primary-dim: hsl(215, 25%, 50%);
-}
-
 @layer base {
-  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --background:            0 0% 9%;
+    --background-light:      0 0% 13%;
+    --foreground:            0 0% 93%;
 
-  html {
-    scroll-behavior: smooth;
-    background-color: var(--bg);
+    --card:                  0 0% 11%;
+    --card-foreground:       0 0% 96%;
+    --popover:               0 0% 11%;
+    --popover-foreground:    0 0% 96%;
+
+    --primary:               215 25% 70%;
+    --primary-foreground:    0 0% 10%;
+
+    --secondary:             0 0% 18%;
+    --secondary-foreground:  0 0% 96%;
+
+    --muted:                 0 0% 16%;
+    --muted-foreground:      0 0% 68%;
+
+    --accent:                0 0% 16%;
+    --accent-foreground:     0 0% 96%;
+
+    --destructive:           0 70% 50%;
+    --destructive-foreground:0 0% 98%;
+
+    --border:                0 0% 22%;
+    --input:                 0 0% 16%;
+    --ring:                  215 25% 70%;
+
+    /* legacy tokens used in components */
+    --bg:              hsl(0, 0%, 9%);
+    --bg-surface:      hsl(0, 0%, 11%);
+    --bg-elevated:     hsl(0, 0%, 13%);
+    --text-primary:    hsl(0, 0%, 93%);
+    --text-secondary:  hsl(0, 0%, 68%);
+    --text-muted:      hsl(0, 0%, 40%);
+    --primary-color:   hsl(215, 25%, 70%);
   }
+
+  ::-webkit-scrollbar { display: none; }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    border-color: hsl(var(--border));
+  }
+
+  html { scroll-behavior: smooth; }
 
   body {
     font-family: 'Roboto Flex', sans-serif;
-    background-color: var(--bg);
-    color: var(--text-primary);
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
@@ -41,14 +67,9 @@
   }
 
   ::selection {
-    background-color: hsla(215, 25%, 70%, 0.3);
+    background-color: hsl(215, 25%, 70%, 0.25);
     color: #fff;
   }
-
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--primary-color); }
 }
 
 @layer components {
@@ -83,8 +104,8 @@
     font-size: 0.875rem;
     font-weight: 500;
     border-radius: 2px;
-    background-color: var(--primary-color);
-    color: hsl(0, 0%, 10%);
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
     transition: background-color 0.2s ease;
     text-decoration: none;
     cursor: pointer;
@@ -100,39 +121,45 @@
     font-size: 0.875rem;
     font-weight: 500;
     border-radius: 2px;
-    border: 1px solid var(--border);
-    color: var(--text-secondary);
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--muted-foreground));
     background-color: transparent;
     transition: border-color 0.2s ease, color 0.2s ease;
     text-decoration: none;
     cursor: pointer;
   }
-  .btn-outline:hover { border-color: var(--primary-color); color: var(--primary-color); }
+  .btn-outline:hover {
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+  }
 
   .card {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border);
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
     border-radius: 2px;
     padding: 2rem;
     transition: border-color 0.3s ease, background-color 0.3s ease;
   }
-  .card:hover { border-color: hsla(215, 25%, 70%, 0.4); background-color: var(--bg-elevated); }
+  .card:hover {
+    border-color: hsl(215, 25%, 70%, 0.4);
+    background-color: hsl(var(--background-light));
+  }
 
   .skill-pill {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
     border-radius: 2px;
-    border: 1px solid var(--border);
-    background-color: var(--bg-surface);
-    color: var(--text-secondary);
+    border: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+    color: hsl(var(--muted-foreground));
     transition: border-color 0.2s, color 0.2s, background-color 0.2s;
     cursor: default;
   }
   .skill-pill:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    background-color: hsla(215, 25%, 70%, 0.07);
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+    background-color: hsl(215, 25%, 70%, 0.07);
   }
 
   .contact-link {
@@ -140,14 +167,14 @@
     align-items: center;
     gap: 1rem;
     padding: 1.25rem;
-    border: 1px solid var(--border);
+    border: 1px solid hsl(var(--border));
     border-radius: 2px;
-    background-color: var(--bg-surface);
+    background-color: hsl(var(--card));
     text-decoration: none;
     transition: border-color 0.2s, background-color 0.2s;
   }
   .contact-link:hover {
-    border-color: hsla(215, 25%, 70%, 0.4);
-    background-color: var(--bg-elevated);
+    border-color: hsl(215, 25%, 70%, 0.4);
+    background-color: hsl(var(--background-light));
   }
 }
